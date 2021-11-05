@@ -15,8 +15,7 @@ ff = fv.FuzzyVar()
 ff.add_term(A)
 ff.add_term(B)
 ff.add_term(C)
-
-ff.show_val_memberships(4.2)
+print([i for i in ff.get_val_memberships(4.2)])
 
 plt.plot(x,[A.fuzzification(i) for i in x], 'tab:green')
 plt.plot(x,[B.fuzzification(i) for i in x], 'tab:blue')

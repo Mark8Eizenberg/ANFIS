@@ -23,9 +23,14 @@ class FuzzyVar:
     def add_term(self, term:Term):
         self.terms.append(term)
     
-    def show_val_memberships(self, x):
+    def print_val_memberships(self, x) -> None:
         for term in self.terms:
             print("{} : {}".format(term.name, term.fuzzification(x)))
+    
+    def get_val_memberships(self, x) -> dict:
+        return {[term.name] : term.fuzzification(x) for term in self.terms}
+
+        
 
 
 def triangle_func(x,arg):
