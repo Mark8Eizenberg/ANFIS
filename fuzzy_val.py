@@ -28,7 +28,7 @@ class FuzzyVar:
             print("{} : {}".format(term.name, term.fuzzification(x)))
     
     def get_val_memberships(self, x) -> dict:
-        return {[term.name] : term.fuzzification(x) for term in self.terms}
+        return [[term.name , term.fuzzification(x)] for term in self.terms]
 
         
 
