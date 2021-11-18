@@ -1,4 +1,7 @@
-import math as m 
+import math as m
+import pickle as p
+
+from numpy import divide 
 
 class Term:
     '''
@@ -30,8 +33,34 @@ class FuzzyVar:
     def get_val_memberships(self, x) -> dict:
         return [[term.name , term.fuzzification(x)] for term in self.terms]
 
-        
+class FIS:
 
+    def __init__(self) -> None:
+        self.val_input = dict()
+        self.rules = dict()
+        pass
+
+    def save_fis_to_file(path:str, fis):
+        with open(path, "wb") as f:
+            p.dump(fis, f)
+
+    def load_fis_from_file(path:str):
+        with open(path, "rb") as f:
+            return p.load(f)            
+
+    def add_input_value(self, f_var:FuzzyVar):
+        self.val_input[len(self.val_input) + 1] = f_var
+
+    def calc_centroid(self, *arg):
+        '''
+        *args is argument for inputs
+        '''
+        area = 0; divider = 0
+        for i in self.val_input:
+            divider += max(term.fuzzification(arg[i - 1]) for term in self.val_input[i].terms)
+            area += (divider * arg[i - 1])
+        return area/divider
+  
 
 def triangle_func(x,arg):
     '''
