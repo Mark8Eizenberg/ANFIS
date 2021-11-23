@@ -1,7 +1,7 @@
 import math as m
 import pickle as p
-
-from numpy import divide 
+import numpy as np
+from numpy.core.fromnumeric import var
 
 class Term:
     '''
@@ -60,6 +60,70 @@ class FIS:
             divider += max(term.fuzzification(arg[i - 1]) for term in self.val_input[i].terms)
             area += (divider * arg[i - 1])
         return area/divider
+
+def sigmoid_function_NN(x):
+    return 1/(1+np.e**(-x))
+        
+class ANFIS_HL(FIS):
+
+    def __init__(self, hidden_neurals, fis=None) -> None:
+        super().__init__()
+        if fis != None:
+            self.fis = fis
+        else:
+            self.fis = super()
+        np.random.seed(1)
+        self.hidden_neurals = hidden_neurals
+        self.s_hidden = None
+        self.s_output = None
+    
+    def train_system(self, epoch, input_set, train_set):
+        #Get terms and func from variables
+        terms = [self.fis.val_input[i].terms for i in self.fis.val_input]
+        func = [[j.func for j in i] for i in terms]
+        args = [[j.arg for j in i] for i in terms]
+        set_train = []
+        #Make layers for NN inside FIS
+        for var_num in input_set:
+            for i in range(len(var_num)):
+                set_train.append([func[i][j](var_num[i], args[i][j]) for j in range(len(func[i]))])
+        l0_s = np.array(set_train)
+        output = np.array(train_set)
+        self.s_hidden = 2 * np.random.random((len(l0_s.T), self.hidden_neurals))
+        self.s_output = 2 * np.random.random((self.hidden_neurals, len(output.T)))
+        print("Hidden")
+        print(self.s_hidden)
+        print("out")
+        print(self.s_output)
+        for j in range(epoch):
+            l0 = l0_s
+            #Synopsys
+            l1 = sigmoid_function_NN(l0.dot(self.s_hidden))
+            l2 = sigmoid_function_NN(l1.dot(self.s_output))
+            #deltas
+            l2_delta = (output - l2) * (l2 * (1 - l2))
+            l1_delta = l2_delta.dot(self.s_output.T) * (l1 * (1 - l1))
+            self.s_output += l1.T.dot(l2_delta)
+            self.s_hidden += l0.T.dot(l1_delta)
+        print("Hidden")
+        print(self.s_hidden)
+        print("out")
+        print(self.s_output)
+
+    def calc_after_train(self, input):
+        terms = [self.fis.val_input[i].terms for i in self.fis.val_input]
+        func = [[j.func for j in i] for i in terms]
+        args = [[j.arg for j in i] for i in terms]
+        input_set = []
+        #Make layers for NN inside FIS
+        for var_num in input:
+            for i in range(len(var_num)):
+                input_set.append([func[i][j](var_num[i], args[i][j]) for j in range(len(func[i]))])
+        input_array = np.array(input_set)
+        r = (sigmoid_function_NN(input_array.dot(self.s_hidden)).dot(self.s_output))
+        print("result")
+        print(r)
+
   
 
 def triangle_func(x,arg):

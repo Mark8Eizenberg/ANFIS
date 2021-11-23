@@ -20,6 +20,7 @@ ff.add_term(B)
 ff.add_term(C)
 print([i for i in ff.get_val_memberships(input[0])])
 
+
 ff_2.add_term(fv.Term("dry", fv.z_func, 20,55))
 ff_2.add_term(fv.Term("wet", fv.s_func, 50, 90))
 ff_2.add_term(fv.Term("normal", fv.bell_func, 10,20,50))
@@ -34,6 +35,12 @@ print("centroid: {}".format(a))
 s = fv.FIS()
 s = fv.FIS.load_fis_from_file("FIS.fis")
 print(f"centroid for fis:{s.calc_centroid(10,20)}")
+
+anfis = fv.ANFIS_HL(6, s)
+anfis.train_system(10,[[10,4]],[4])
+anfis.calc_after_train([[10, 4]])
+anfis.train_system(10000,[[10,4]],[4])
+anfis.calc_after_train([[10, 4]])
 
 plt.plot(x,[A.fuzzification(i) for i in x], 'tab:green')
 plt.plot(x,[B.fuzzification(i) for i in x], 'tab:blue')
