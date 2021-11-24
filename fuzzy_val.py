@@ -83,13 +83,14 @@ def make_combinations_calc(func, s:Iterable[Iterable]):
 
 class ANFIS_HL(FIS):
 
-    def __init__(self, hidden_neurals, fis=None) -> None:
+    def __init__(self, hidden_neurals, output_var:FuzzyVar, fis=None ) -> None:
         super().__init__()
         if fis != None:
             self.fis = fis
         else:
             self.fis = super()
         np.random.seed(1)
+        self.output_var = output_var
         self.hidden_neurals = hidden_neurals
         self.rules = dict()
         self.s_hidden = None
@@ -132,12 +133,13 @@ class ANFIS_HL(FIS):
         terms = [self.fis.val_input[i].terms for i in self.fis.val_input]
         func = [[j.func for j in i] for i in terms]
         args = [[j.arg for j in i] for i in terms]
-        out = np.array(train)
+        assert(len(train) == len(self.output_var.terms))
+        out = np.array([self.output_var.terms[i].func(train[i],self.output_var.terms[i].arg ) for i in range(len(train))])
         input_fuzzy = []
         for i in range(len(input)):
             input_fuzzy.append([func[i][j](input[i], args[i][j]) for j in range(len(func[i]))])
 
-        rules_input_multiplication = np.array([[i] for i in make_combinations_calc(lambda a,b : a*b, input_fuzzy )])
+        rules_input_multiplication = np.array([[i] for i in make_combinations_calc(lambda a,b : min(a,b), input_fuzzy )])
         l0 = rules_input_multiplication
         l1 = np.array(sigmoid_function_NN(l0.T.dot(self.s_hidden)))
         l2 = sigmoid_function_NN(l1.dot(self.s_output))
@@ -165,7 +167,7 @@ class ANFIS_HL(FIS):
         l1 = np.array(sigmoid_function_NN(l0.T.dot(self.s_hidden)))
         l2 = sigmoid_function_NN(l1.dot(self.s_output))
         print("result")
-        print(l2)
+        return l2
 
   
 
