@@ -110,7 +110,7 @@ print([n1, n2, n3])
 
 tmp = n3
 for i in range(10):
-    tmp =  n.calc_after_train([tmp, 40000000])
+    tmp =  n.calc_after_train([tmp[0][0], 40000000])
     print("Answer #{} = {}".format(i, tmp[0][0]))
 plt.grid(True)
 plt.show()
