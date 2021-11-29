@@ -28,10 +28,16 @@ class FuzzyVar:
         self.terms.append(term)
     
     def print_val_memberships(self, x) -> None:
+        '''
+        Print terms anf fuzification value
+        '''
         for term in self.terms:
             print("{} : {}".format(term.name, term.fuzzification(x)))
     
     def get_val_memberships(self, x) -> dict:
+        '''
+        return list with lists of terms and fuzzification values for each one
+        '''
         return [[term.name , term.fuzzification(x)] for term in self.terms]
 
 class FIS:
@@ -42,10 +48,16 @@ class FIS:
         pass
 
     def save_fis_to_file(path:str, fis):
+        '''
+        save FIS object to binary file
+        '''
         with open(path, "wb") as f:
             p.dump(fis, f)
 
     def load_fis_from_file(path:str):
+        '''
+        Load FIS object from file
+        '''
         with open(path, "rb") as f:
             return p.load(f)            
 
@@ -63,9 +75,16 @@ class FIS:
         return area/divider
 
 def sigmoid_function_NN(x):
+    '''
+    Sigmoid function for NN
+    '''
     return 1/(1+np.e**(-x))
 
 def make_combinations_calc(func, s:Iterable[Iterable]):
+    '''
+    Combinatoric function
+    Used for make multiplicator layers with rules
+    '''
     set_s = []
     buff = []
     for i in range(len(s) - 1, -1, -1):  
@@ -81,7 +100,7 @@ def make_combinations_calc(func, s:Iterable[Iterable]):
     return set_s
 
 
-class ANFIS_HL(FIS):
+class FIONS(FIS):
 
     def __init__(self, hidden_neurals, output_var:FuzzyVar, fis=None ) -> None:
         super().__init__()
@@ -111,25 +130,10 @@ class ANFIS_HL(FIS):
         self.s_hidden =  2 * np.random.random((num_of_multiplicator_neurons, self.hidden_neurals))
         self.s_output = 2 * np.random.random((self.hidden_neurals, 1))
 
-        # print(self.s_hidden)
-        # print(self.s_output)
-        # inp = [15,20,40]
-        # out = np.array([4])
-        # print(self.s_hidden.dot(self.s_output))
-        # input_fuzzy = []
-        # for i in range(len(inp)):
-        #     input_fuzzy.append([func[i][j](inp[i], args[i][j]) for j in range(len(func[i]))])
-
-        # rules_input_multiplication = np.array([[i] for i in make_combinations_calc(lambda a,b : a*b, input_fuzzy )])
-        # l0 = rules_input_multiplication
-        # l1 = np.array(sigmoid_function_NN(l0.T.dot(self.s_hidden)))
-        # l2 = sigmoid_function_NN(l1.dot(self.s_output))
-        # l2_delta = (out - l2) * (l2 * (1 - l2))
-        # l1_delta = l2_delta.dot(self.s_output.T) * (l1 * (1 - l1))
-        # self.s_output += l1.T.dot(l2_delta)
-        # self.s_hidden += l0.dot(l1_delta)
-
     def _train_system(self, input, train):
+        '''
+        Train system on one set
+        '''
         terms = [self.fis.val_input[i].terms for i in self.fis.val_input]
         func = [[j.func for j in i] for i in terms]
         args = [[j.arg for j in i] for i in terms]
@@ -138,7 +142,6 @@ class ANFIS_HL(FIS):
         input_fuzzy = []
         for i in range(len(input)):
             input_fuzzy.append([func[i][j](input[i], args[i][j]) for j in range(len(func[i]))])
-
         rules_input_multiplication = np.array([[i] for i in make_combinations_calc(lambda a,b : min(a,b), input_fuzzy )])
         l0 = rules_input_multiplication
         l1 = np.array(sigmoid_function_NN(l0.T.dot(self.s_hidden)))
@@ -148,26 +151,46 @@ class ANFIS_HL(FIS):
         self.s_output += l1.T.dot(l2_delta)
         self.s_hidden += l0.dot(l1_delta)
 
-    def train_anfis(self, epoch, input_dataset, answer_dataset):
+    def train_fions(self, epoch, input_dataset, answer_dataset):
+        '''
+        Train anfis system using trainset and num of epoch
+        '''
         assert(len(input_dataset) == len(answer_dataset))
         for j in range(epoch):
             for i in range(len(input_dataset) - 1):
                 self._train_system(input_dataset[i], answer_dataset[i])
 
     def calc_after_train(self, input):
+        '''
+        Calculation output of system
+        use it after initialization or training
+        '''
         terms = [self.fis.val_input[i].terms for i in self.fis.val_input]
         func = [[j.func for j in i] for i in terms]
         args = [[j.arg for j in i] for i in terms]
         input_fuzzy = []
         for i in range(len(input)):
             input_fuzzy.append([func[i][j](input[i], args[i][j]) for j in range(len(func[i]))])
-
         rules_input_multiplication = np.array([[i] for i in make_combinations_calc(lambda a,b : a*b, input_fuzzy )])
         l0 = rules_input_multiplication
         l1 = np.array(sigmoid_function_NN(l0.T.dot(self.s_hidden)))
         l2 = sigmoid_function_NN(l1.dot(self.s_output))
-        print("result")
         return l2
+
+    def save_fions_to_file(path:str, model):
+        '''
+        save FIONS object to binary file
+        '''
+        with open(path, "wb") as f:
+            p.dump(fis, f)
+
+    def load_fions_from_file(path:str):
+        '''
+        Load FIONS object from file
+        '''
+        with open(path, "rb") as f:
+            return p.load(f)        
+
 
   
 
