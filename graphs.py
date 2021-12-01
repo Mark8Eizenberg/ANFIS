@@ -4,41 +4,6 @@ import fuzzy_val as fv
 import numpy as np
 import matplotlib.pyplot as plt
 
-#read dataset from CSV file
-covid = pnd.read_csv("covid_data.csv")
-
-
-#make date depence list
-dates = {}
-for i in covid['date']:
-    if not dt.date.fromisoformat(i) in dates and dt.date.fromisoformat(i) < dt.date(2021,10,1):
-        dates[dt.date.fromisoformat(i)] = {}
-
-covid.fillna(0, inplace=True) #fill all nan by zero
-
-for i in range(1, len(covid)):
-    #print(covid['date'][i])
-    if covid['location'][i] in ['Ukraine', 'Japan', 'Italy', 'France', 'China', 'United States', 'United Kingdom', 'Sweden'] and dt.date.fromisoformat(covid['date'][i]) <  dt.date(2021,10,1):
-        dates[dt.date.fromisoformat(covid['date'][i])][covid['location'][i]] = [
-            covid['total_cases_per_million'][i], #0
-            covid['new_cases_per_million'][i], #1
-            covid['total_deaths_per_million'][i], #2
-            covid['new_deaths_per_million'][i], #3
-            covid['reproduction_rate'][i], #4
-            covid['total_vaccinations_per_hundred'][i], #5
-            covid['population'][i], #6
-            covid['population_density'][i], #7
-            covid['median_age'][i], #8
-            covid['cardiovasc_death_rate'][i], #9
-        ]
-
-train_set = []
-for i in dates:
-    if i < dt.date(2021,9,30):
-        for j in dates[i]:
-            train_set.append([i, dates[i][j], dates[i + dt.timedelta(days=1)][j]])
-
-#X oordinates for plots
 cases_x = np.arange(0, 60, 1)
 death_cases_x = np.arange(0, 10, 0.1)
 reproduction_x = np.arange(-11, 40, 0.5)
@@ -118,19 +83,8 @@ corelation_answer = [cases_answer_term.fuzzification(x) for x in cases_x]
 # plt.plot(cases_x, corelation_answer, 'tab:blue')
 cases_answer = fv.FuzzyVar()
 cases_answer.add_term(cases_answer_term)
-
-#Make FIS system for input
-fis_input = fv.FIS()
-fis_input.add_input_value(cases)
-fis_input.add_input_value(death_cases)
-fis_input.add_input_value(reproduction)
-fis_input.add_input_value(vaccinations)
-fis_input.add_input_value(population)
-fis_input.add_input_value(pop_density)
-fis_input.add_input_value(medium_age)
-fis_input.add_input_value(cv_death)
-
-a = fis_input.calc_centroid(10,0,3,10,2,5,1,4)
-nn_system = fv.FIONS(23, cases_answer, fis_input )
-nn_system.init_system()
-nn_system.train_fions(1,)
+plt.plot(vaccine_x, [vaccine_small.fuzzification(x) for x in vaccine_x], 'tab:green')
+plt.plot(vaccine_x, [vaccine_medium.fuzzification(x) for x in vaccine_x], 'tab:orange')
+plt.plot(vaccine_x, [vaccine_large.fuzzification(x) for x in vaccine_x], 'tab:red')
+plt.grid(True)
+plt.show()

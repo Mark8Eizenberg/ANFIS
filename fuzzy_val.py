@@ -1,7 +1,6 @@
 import math as m
 import pickle as p
 import numpy as np
-import itertools as it
 from typing import Iterable
 
 class Term:
@@ -44,7 +43,6 @@ class FIS:
 
     def __init__(self) -> None:
         self.val_input = dict()
-        self.rules = dict()
         pass
 
     def save_fis_to_file(path:str, fis):
@@ -182,7 +180,7 @@ class FIONS(FIS):
         save FIONS object to binary file
         '''
         with open(path, "wb") as f:
-            p.dump(fis, f)
+            p.dump(model, f)
 
     def load_fions_from_file(path:str):
         '''
